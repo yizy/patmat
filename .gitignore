@@ -1,0 +1,8 @@
+.idea
+.settings
+.project
+.classpath
+target
+project
+lib_managed
+lib
