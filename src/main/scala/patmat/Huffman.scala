@@ -1,8 +1,8 @@
 package patmat
 
-import com.sun.xml.internal.rngom.ast.builder.GrammarSection.Combine
+//import com.sun.xml.internal.rngom.ast.builder.GrammarSection.Combine
 import common._
-import patmat.Huffman.{Fork, Leaf}
+//import patmat.Huffman.{Fork, Leaf}
 
 /**
  * Assignment 4: Huffman coding
@@ -23,8 +23,6 @@ object Huffman {
   abstract class CodeTree
   case class Fork(left: CodeTree, right: CodeTree, chars: List[Char], weight: Int) extends CodeTree
   case class Leaf(char: Char, weight: Int) extends CodeTree
-
-
 
   // Part 1: Basics
 
@@ -80,10 +78,8 @@ object Huffman {
    *   }
    */
   def times(chars: List[Char]): List[(Char, Int)] = {
-    chars.foldLeft(Map[Char, Int]()) ((map, c) => map.get(c) match {
-        case Some(num: Int) => map + (c -> (num + 1))
-        case None => map + (c -> 1)
-      }
+    chars.foldLeft(Map[Char, Int]())((map, c) =>
+      map + (c -> (map.getOrElse(c, 0) + 1))
     ).toList
   }
 
@@ -138,7 +134,11 @@ object Huffman {
    */
   def until(singleton: List[CodeTree] => Boolean, combine: List[CodeTree] => List[CodeTree])
            (trees: List[CodeTree]): CodeTree = {
-    if (singleton(trees)) trees.head else until(singleton, combine)(combine(trees))
+    if (trees == Nil)
+      throw new NullPointerException
+
+    if (singleton(trees)) trees.head
+    else until(singleton, combine)(combine(trees))
   }
 
   /**
@@ -181,7 +181,7 @@ object Huffman {
 
   /**
    * What does the secret message say? Can you decode it?
-   * For the decoding use the `frenchCode' Huffman tree defined above.
+   * For the decoding use the 'frenchCode' Huffman tree defined above.
    */
   val secret: List[Bit] = List(0,0,1,1,1,0,1,0,1,1,1,0,0,1,1,0,1,0,0,1,1,0,1,0,1,1,0,0,1,1,1,1,1,0,1,0,1,1,0,0,0,0,1,0,1,1,1,0,0,1,0,0,1,0,0,0,1,0,0,0,1,0,1)
 
@@ -228,7 +228,8 @@ object Huffman {
    */
   def convert(tree: CodeTree): CodeTable = {
     tree match {
-      case Fork(l, r, _, _) => mergeCodeTables(convert(l).map(e => (e._1, 0 :: e._2)),
+      case Fork(l, r, _, _) => mergeCodeTables(
+        convert(l).map(e => (e._1, 0 :: e._2)),
         convert(r).map(e => (e._1, 1 :: e._2)))
       case Leaf(c, _) => List((c, List()))
     }
@@ -259,13 +260,15 @@ object Test extends App {
   println(Huffman.makeOrderedLeafList(List[(Char, Int)](('a', 3), ('b', 2), ('c', 1), ('d', 5))))
 
 
-  val leaflist = List(Leaf('e', 1), Leaf('t', 2), Leaf('x', 4))
+  val leaflist = List(Huffman.Leaf('e', 1), Huffman.Leaf('t', 2), Huffman.Leaf('x', 4))
   println(leaflist)
   println(Huffman.until(Huffman.singleton, Huffman.combine)(leaflist))
-//  println(Huffman.combine(leaflist))
-//  println(Huffman.combine(leaflist) == List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)))
+  //  println(Huffman.combine(leaflist))
+  //  println(Huffman.combine(leaflist) == List(Fork(Leaf('e',1),Leaf('t',2),List('e', 't'),3), Leaf('x',4)))
   println(Huffman.decodedSecret)
   println(Huffman.encode(Huffman.frenchCode)("huffmanestcool".toList))
   println(Huffman.quickEncode(Huffman.frenchCode)("huffmanestcool".toList))
   println(Huffman.secret)
+
 }
+
